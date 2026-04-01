@@ -1,7 +1,10 @@
+Website Testing Command Plan (Bug Bounty Style) 🛡️
 Phase 1 — Target Information Gathering (Recon)
 1. Find Subdomains
 subfinder -d target.com -all -o subdomains.txt
+
 assetfinder target.com
+
 amass enum -d target.com
 2. Check Alive Domains
 httpx -l subdomains.txt -o live.txt
@@ -9,42 +12,63 @@ httpx -l subdomains.txt -o live.txt
 dnsx -l subdomains.txt
 4. Technology Detection
 whatweb https://target.com
+
 wappalyzer https://target.com
 Phase 2 — URL Collection
 5. Collect URLs
 gau target.com
+
 waybackurls target.com
+
 katana -u https://target.com
+
+Save:
+
 gau target.com > urls.txt
 6. Extract Parameters
 cat urls.txt | grep "=" > params.txt
 Phase 3 — Directory Bruteforce
 7. Directory Scan
 gobuster dir -u https://target.com -w /usr/share/wordlists/dirb/common.txt
+
 Advanced:
+
 feroxbuster -u https://target.com
 Phase 4 — Port Scanning
 8. Scan Ports
 nmap -sC -sV target.com
+
 Full scan:
+
 nmap -p- target.com
+
 Fast scan:
+
 rustscan -a target.com
 Phase 5 — Vulnerability Scanning
 9. Nuclei Scan
+
 (Most important tool)
+
 nuclei -u https://target.com
+
 Full templates:
+
 nuclei -u https://target.com -t ~/nuclei-templates
+
 Critical only:
+
 nuclei -severity critical,high -u https://target.com
 Phase 6 — JavaScript Analysis
 10. Extract JS Files
 katana -u https://target.com -jc
+
 or:
+
 gau target.com | grep .js
 11. Secrets Finding
 gf api-keys urls.txt
+
 trufflehog filesystem .
 Phase 7 — Parameter Testing
 12. XSS Testing
@@ -62,28 +86,89 @@ subzy run --targets subdomains.txt
 Phase 10 — Sensitive Files Check
 17. Check Important Files
 https://target.com/robots.txt
+
 https://target.com/sitemap.xml
+
 https://target.com/.env
+
 https://target.com/admin
+
 Automated:
+
 dirsearch -u target.com
 Phase 11 — HTTP Security Headers
 18. Check Headers
 curl -I https://target.com
+
 or:
+
 httpx -security-checks -u https://target.com
 Phase 12 — Automation Workflow (Real Hacker Method)
+
 Real workflow command chain:
+
 subfinder -d target.com | httpx | nuclei
+
 Advanced chain:
+
 subfinder -d target.com | httpx | gau | nuclei
+
 Pro workflow:
+
 subfinder -d target.com -all | httpx | tee live.txt
+
 gau target.com | tee urls.txt
+
 cat urls.txt | gf xss | dalfox pipe
+
 nuclei -l live.txt
 
+Master Testing Checklist ✔️
 
+Always test:
+
+✔ Subdomains
+✔ URLs
+✔ Parameters
+✔ JS files
+✔ APIs
+✔ Login pages
+✔ Upload forms
+✔ Search boxes
+✔ Admin panels
+✔ Redirects
+✔ Error pages
+
+Follow this exact order:
+
+1 Recon
+2 Subdomains
+3 Alive hosts
+4 URL collection
+5 JS analysis
+6 Parameters
+7 Nuclei scan
+8 Manual testing
+9 Exploitation
+10 Report
+
+Advanced Pro Tip ⭐
+
+Top 5 commands real bug hunters always run:
+
+subfinder -d target.com -all
+
+httpx -l subdomains.txt
+
+gau target.com
+
+nuclei -u target.com
+
+katana -u target.com
+
+fontend testing 
+
+Here is a Frontend Website Testing Plan (Manual + Commands) focused on client-side security testing (very important for bug bounty and web pentesting).
 
 Frontend Testing Plan 🖥️
 Phase 1 — Browser Inspection
