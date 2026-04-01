@@ -1,0 +1,299 @@
+Phase 1 — Target Information Gathering (Recon)
+1. Find Subdomains
+subfinder -d target.com -all -o subdomains.txt
+assetfinder target.com
+amass enum -d target.com
+2. Check Alive Domains
+httpx -l subdomains.txt -o live.txt
+3. Find IPs
+dnsx -l subdomains.txt
+4. Technology Detection
+whatweb https://target.com
+wappalyzer https://target.com
+Phase 2 — URL Collection
+5. Collect URLs
+gau target.com
+waybackurls target.com
+katana -u https://target.com
+gau target.com > urls.txt
+6. Extract Parameters
+cat urls.txt | grep "=" > params.txt
+Phase 3 — Directory Bruteforce
+7. Directory Scan
+gobuster dir -u https://target.com -w /usr/share/wordlists/dirb/common.txt
+Advanced:
+feroxbuster -u https://target.com
+Phase 4 — Port Scanning
+8. Scan Ports
+nmap -sC -sV target.com
+Full scan:
+nmap -p- target.com
+Fast scan:
+rustscan -a target.com
+Phase 5 — Vulnerability Scanning
+9. Nuclei Scan
+(Most important tool)
+nuclei -u https://target.com
+Full templates:
+nuclei -u https://target.com -t ~/nuclei-templates
+Critical only:
+nuclei -severity critical,high -u https://target.com
+Phase 6 — JavaScript Analysis
+10. Extract JS Files
+katana -u https://target.com -jc
+or:
+gau target.com | grep .js
+11. Secrets Finding
+gf api-keys urls.txt
+trufflehog filesystem .
+Phase 7 — Parameter Testing
+12. XSS Testing
+dalfox file params.txt
+13. SQL Injection
+sqlmap -u "https://target.com/page?id=1" --batch
+14. Open Redirect
+gf redirect urls.txt
+Phase 8 — Screenshot & Visual Testing
+15. Screenshot Sites
+gowitness file -f live.txt
+Phase 9 — Takeover Check
+16. Subdomain Takeover
+subzy run --targets subdomains.txt
+Phase 10 — Sensitive Files Check
+17. Check Important Files
+https://target.com/robots.txt
+https://target.com/sitemap.xml
+https://target.com/.env
+https://target.com/admin
+Automated:
+dirsearch -u target.com
+Phase 11 — HTTP Security Headers
+18. Check Headers
+curl -I https://target.com
+or:
+httpx -security-checks -u https://target.com
+Phase 12 — Automation Workflow (Real Hacker Method)
+Real workflow command chain:
+subfinder -d target.com | httpx | nuclei
+Advanced chain:
+subfinder -d target.com | httpx | gau | nuclei
+Pro workflow:
+subfinder -d target.com -all | httpx | tee live.txt
+gau target.com | tee urls.txt
+cat urls.txt | gf xss | dalfox pipe
+nuclei -l live.txt
+
+
+
+Frontend Testing Plan 🖥️
+Phase 1 — Browser Inspection
+1. Check Source Code
+
+Open website → press:
+
+Ctrl + U
+
+Look for:
+
+✔ Hidden endpoints
+✔ API keys
+✔ Comments
+✔ Debug info
+✔ JS files
+
+Phase 2 — Developer Tools Testing
+
+Open DevTools:
+
+F12
+
+Test these tabs:
+
+Elements Tab
+
+Check:
+
+✔ Hidden inputs
+✔ Disabled buttons
+✔ Admin fields
+
+Example test:
+
+Change:
+
+<input type="hidden" value="user">
+
+to:
+
+<input value="admin">
+Console Testing
+
+Test JavaScript errors:
+
+Example:
+
+alert(document.cookie)
+
+Check:
+
+✔ Cookies
+✔ Tokens
+✔ Errors
+
+Network Tab Testing
+
+Look for:
+
+✔ API requests
+✔ Authorization tokens
+✔ POST requests
+✔ JSON data
+
+Filter:
+
+Fetch/XHR
+
+Check responses for:
+
+✔ Sensitive data
+✔ User IDs
+✔ Emails
+✔ Tokens
+
+Phase 3 — JavaScript Testing
+Extract JS files:
+
+View:
+
+Sources tab
+
+or command:
+
+gau target.com | grep .js
+Analyze JS:
+
+Tools:
+
+linkfinder -i https://target.com/app.js
+
+Find:
+
+✔ API endpoints
+✔ Secrets
+✔ Tokens
+✔ Internal URLs
+
+Phase 4 — Input Testing
+
+Test all inputs:
+
+✔ Login
+✔ Search
+✔ Contact forms
+✔ Upload forms
+
+Test payloads:
+
+XSS test:
+<script>alert(1)</script>
+"><img src=x onerror=alert(1)>
+HTML Injection:
+<h1>test</h1>
+Event Injection:
+" onmouseover="alert(1)
+Phase 5 — Authentication Testing
+
+Test:
+
+✔ Login bypass
+✔ Password reset
+✔ Session handling
+
+Try:
+
+Change request in DevTools:
+
+role=user → role=admin
+
+Check response.
+
+Phase 6 — Client Side Storage Testing
+
+Check:
+
+Application tab → Storage
+
+Look:
+
+✔ Local Storage
+✔ Session Storage
+✔ Cookies
+
+Check for:
+
+✔ JWT tokens
+✔ User data
+✔ Emails
+
+Console command:
+
+localStorage
+sessionStorage
+Phase 7 — CORS Testing
+
+Check in Network tab:
+
+Look for:
+
+Access-Control-Allow-Origin: *
+
+Command:
+
+curl -I https://target.com
+Phase 8 — UI Logic Testing
+
+Test:
+
+✔ Change prices
+✔ Change quantity
+✔ Remove restrictions
+
+Example:
+
+Change:
+
+price: 100
+
+to:
+
+price: 1
+
+Check if accepted.
+
+Phase 9 — Frontend Security Headers
+
+Command:
+
+curl -I https://target.com
+
+Check:
+
+✔ CSP
+✔ X-Frame
+✔ HSTS
+✔ XSS Protection
+
+Phase 10 — Frontend Bug Checklist ✔️
+
+Always test:
+
+✔ XSS
+✔ DOM XSS
+✔ HTML injection
+✔ JS secrets
+✔ IDOR via frontend API
+✔ CORS issues
+✔ Clickjacking
+✔ Token exposure
+✔ Debug endpoints
+✔ Source maps (.map files)
